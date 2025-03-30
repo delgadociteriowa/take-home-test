@@ -2,7 +2,6 @@ import { google } from 'googleapis';
 import { getSession } from 'next-auth/react';
 
 export default async function handler(req, res) {
-  console.log('Si pasa por acá');
   const session = await getSession({ req });
 
   if (!session || !session.accessToken) {

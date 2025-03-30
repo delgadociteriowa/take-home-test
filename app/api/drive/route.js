@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth/next';
 import { NextResponse } from 'next/server';
 import { authOptions } from '@/utils/authOptions';
 
-export async function GET(req) {
+export async function GET() {
   const session = await getServerSession(authOptions);
 
   if (!session || !session.accessToken) {
@@ -23,7 +23,6 @@ export async function GET(req) {
 
     return NextResponse.json(response.data.files);
   } catch (error) {
-    console.log('ERROR ES:', error);
     return NextResponse.json(
       { error: 'Failed to fetch files' },
       { status: 500 }
