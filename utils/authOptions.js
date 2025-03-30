@@ -12,6 +12,7 @@ export const authOptions = {
           prompt: 'consent',
           access_type: 'offline',
           response_type: 'code',
+          scope: 'openid email profile https://www.googleapis.com/auth/drive',
         },
       },
     }),
@@ -30,9 +31,16 @@ export const authOptions = {
       }
       return true;
     },
-    async session({ session }) {
+    async jwt({ token, account }) {
+      if (account) {
+        token.accessToken = account.access_token;
+      }
+      return token;
+    },
+    async session({ session, token }) {
       const user = await User.findOne({ email: session.user.email });
       session.user.id = user._id.toString();
+      session.accessToken = token.accessToken;
       return session;
     },
   },
