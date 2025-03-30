@@ -92,7 +92,7 @@ const Navbar = () => {
                     <button
                       key={index}
                       onClick={() => signIn(provider.id)}
-                      className='flex items-center text-white bg-gray-700 hover:bg-gray-900 hover:text-white rounded-md px-3 py-2'
+                      className='flex items-center text-white bg-gray-700 hover:bg-gray-900 hover:text-white rounded-md px-3 py-2 hover:cursor-pointer'
                     >
                       <span>Login / Register</span>
                     </button>
@@ -107,7 +107,7 @@ const Navbar = () => {
                 <div>
                   <button
                     type='button'
-                    className='relative flex rounded-full bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800'
+                    className='relative flex rounded-full bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800 hover:cursor-pointer'
                     id='user-menu-button'
                     aria-expanded='false'
                     aria-haspopup='true'
@@ -135,7 +135,7 @@ const Navbar = () => {
                     tabIndex='-1'
                   >
                     <button
-                      className='block px-4 py-2 text-sm text-gray-700'
+                      className='block px-4 py-2 text-sm text-gray-700 hover:cursor-pointer'
                       role='menuitem'
                       tabIndex='-1'
                       id='user-menu-item-2'
