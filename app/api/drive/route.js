@@ -2,6 +2,7 @@ import { google } from 'googleapis';
 import { getServerSession } from 'next-auth/next';
 import { NextResponse } from 'next/server';
 import { authOptions } from '@/utils/authOptions';
+import { Readable } from 'stream';
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -64,8 +65,7 @@ export async function DELETE(req) {
   }
 }
 
-export async function DOWNLOAD(req) {
-  console.log('SI PASA POR ACÁ EL GET');
+export async function POST(req) {
   const session = await getServerSession(authOptions);
 
   if (!session || !session.accessToken) {
@@ -78,41 +78,39 @@ export async function DOWNLOAD(req) {
   const drive = google.drive({ version: 'v3', auth });
 
   try {
-    const url = new URL(req.url);
-    const fileId = url.searchParams.get('fileId');
+    const formData = await req.formData();
+    const file = formData.get('file');
 
-    if (!fileId) {
-      return NextResponse.json(
-        { error: 'File ID is required' },
-        { status: 400 }
-      );
+    if (!file) {
+      return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
     }
 
-    const fileResponse = await drive.files.get(
-      {
-        fileId,
-        alt: 'media',
-      },
-      { responseType: 'stream' }
-    );
+    if (file instanceof Blob) {
+      const fileName = file.name || 'untitled';
+      const stream = Readable.from(file.stream());
 
-    const fileStream = fileResponse.data;
-    const fileName = fileResponse.headers['content-disposition']
-      ? fileResponse.headers['content-disposition']
-          .split('filename=')[1]
-          .replace(/"/g, '')
-      : 'downloaded-file';
+      const response = await drive.files.create({
+        requestBody: {
+          name: fileName,
+          mimeType: file.type,
+        },
+        media: {
+          mimeType: file.type,
+          body: stream,
+        },
+      });
 
-    return new NextResponse(fileStream, {
-      headers: {
-        'Content-Type': 'application/octet-stream',
-        'Content-Disposition': `attachment; filename="${fileName}"`,
-      },
-    });
+      return NextResponse.json({
+        message: 'File uploaded successfully',
+        fileId: response.data.id,
+      });
+    } else {
+      return NextResponse.json({ error: 'Invalid file type' }, { status: 400 });
+    }
   } catch (error) {
     console.error(error);
     return NextResponse.json(
-      { error: 'Failed to download file' },
+      { error: 'Failed to upload file' },
       { status: 500 }
     );
   }

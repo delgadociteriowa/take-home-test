@@ -7,6 +7,7 @@ const Home = () => {
   const { data: session } = useSession();
   const [files, setFiles] = useState([]);
   const [selectedFile, setSelectedFile] = useState({ id: '', name: '' });
+  const [selectedFileToUpload, setSelectedFileToUpload] = useState(null);
 
   const fetchFiles = async () => {
     try {
@@ -70,6 +71,40 @@ const Home = () => {
       }
     } catch (error) {
       alert('Error downloading file:', error);
+    }
+  };
+
+  const uploadFile = async (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const res = await fetch('/api/drive', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (res.status === 200) {
+        alert('File uploaded successfully');
+        setSelectedFileToUpload(null);
+      } else {
+        alert('Failed to upload file');
+      }
+    } catch (error) {
+      alert('Error uploading file:', error);
+    }
+  };
+
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    setSelectedFileToUpload(file);
+  };
+
+  const handleUploadClick = () => {
+    if (selectedFileToUpload) {
+      uploadFile(selectedFileToUpload);
+    } else {
+      alert('Please select a file first');
     }
   };
 
@@ -144,6 +179,34 @@ const Home = () => {
                 to start managing your files.
               </p>
             </>
+          )}
+          {session && (
+            <div className='mt-8 mb-4 mx-6'>
+              <h3 className='text-2xl text-gray-700 font-semibold mb-4'>
+                Upload files to your Google Drive
+              </h3>
+              <label className='block mb-2 text-sm font-medium text-gray-700'>
+                Select a File (img or pdf)
+              </label>
+              <input
+                type='file'
+                onChange={handleFileChange}
+                accept='image/*,application/pdf'
+                className='border rounded w-full py-2 px-3 mb-5'
+              />
+
+              <button
+                className={`${
+                  !selectedFileToUpload
+                    ? 'bg-gray-400 hover:bg-gray-400 hover:cursor-not-allowed'
+                    : 'bg-blue-400 hover:bg-blue-500 hover:cursor-pointer'
+                }   rounded-md shadow-md  px-6 py-2 mr-2 text-lg text-white`}
+                onClick={handleUploadClick}
+                disabled={!selectedFileToUpload}
+              >
+                Upload File
+              </button>
+            </div>
           )}
         </div>
       </div>
