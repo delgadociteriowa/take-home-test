@@ -43,6 +43,36 @@ const Home = () => {
     }
   };
 
+  const downloadFile = async (fileId) => {
+    const isConfirmed = window.confirm(
+      `Are you sure you want to download the file: ${selectedFile.name}?`
+    );
+
+    if (!isConfirmed) {
+      return;
+    }
+    try {
+      const res = await fetch(`/api/drive/download?fileId=${fileId}`, {
+        method: 'GET',
+      });
+
+      if (res.status === 200 || res.status === 204) {
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = selectedFile.name || 'downloaded-file';
+        link.click();
+        window.URL.revokeObjectURL(url);
+        setSelectedFile({ id: '', name: '' });
+      } else {
+        alert('Failed to download file');
+      }
+    } catch (error) {
+      alert('Error downloading file:', error);
+    }
+  };
+
   useEffect(() => {
     fetchFiles();
   }, [session]);
@@ -62,11 +92,18 @@ const Home = () => {
                 </h3>
                 {selectedFile.id && (
                   <div className='flex-1 flex justify-end'>
+                    <span className='px-6 py-2 mr-2'>{selectedFile.name}</span>
+                    <button
+                      className='rounded-md shadow-md bg-green-400 hover:bg-green-500 hover:cursor-pointer px-6 py-2 mr-2 text-lg text-white'
+                      onClick={() => downloadFile(selectedFile.id)}
+                    >
+                      Download
+                    </button>
                     <button
                       className='rounded-md shadow-md bg-red-400 hover:bg-red-500 hover:cursor-pointer px-6 py-2 mr-2 text-lg text-white'
                       onClick={() => deleteFile(selectedFile.id)}
                     >
-                      Delete {selectedFile.name}
+                      Delete
                     </button>
                     <button
                       className='rounded-md shadow-md bg-gray-400 hover:bg-gray-500 hover:cursor-pointer px-6 py-2 mr-2 text-lg text-white'
