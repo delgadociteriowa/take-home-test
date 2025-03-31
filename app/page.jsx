@@ -9,16 +9,24 @@ const Home = () => {
   const [selectedFile, setSelectedFile] = useState({ id: '', name: '' });
   const [selectedFileToUpload, setSelectedFileToUpload] = useState(null);
 
+  // Fetch files from the api
   const fetchFiles = async () => {
     try {
+      // Send the request
       const res = await fetch('/api/drive');
+
+      // Convert the response
       const data = await res.json();
+
+      // Update the state
       setFiles(data);
     } catch (error) {
+      // Catch and log errors
       console.error('Error fetching files:', error);
     }
   };
 
+  // Delete a file from the api
   const deleteFile = async (fileId) => {
     const isConfirmed = window.confirm(
       `Are you sure you want to delete the file: ${selectedFile.name}?`
@@ -27,23 +35,32 @@ const Home = () => {
     if (!isConfirmed) {
       return;
     }
+
     try {
+      // Send a DELETE request
       const res = await fetch(`/api/drive?fileId=${fileId}`, {
         method: 'DELETE',
       });
 
+      // Check if the file was successfully deleted
       if (res.status === 200 || res.status === 204) {
         alert('File deleted successfully');
+
+        // Reset the selectedFile state
         setSelectedFile({ id: '', name: '' });
+
+        // Refresh the files list
         fetchFiles();
       } else {
         alert('Failed to delete file');
       }
     } catch (error) {
+      // Handle and display any errors
       alert('Error deleting file:', error);
     }
   };
 
+  // Fetch a single file from the api
   const downloadFile = async (fileId) => {
     const isConfirmed = window.confirm(
       `Are you sure you want to download the file: ${selectedFile.name}?`
@@ -53,55 +70,84 @@ const Home = () => {
       return;
     }
     try {
+      // Send a GET request to the API to download the file
       const res = await fetch(`/api/drive/download?fileId=${fileId}`, {
         method: 'GET',
       });
 
+      // Check if the request was successful
       if (res.status === 200 || res.status === 204) {
+        // Convert the response into a Blob (binary data)
         const blob = await res.blob();
+
+        // Create a temporary URL for the blob data
         const url = window.URL.createObjectURL(blob);
+
+        // Create a temporary anchor element to trigger the download
         const link = document.createElement('a');
         link.href = url;
         link.download = selectedFile.name || 'downloaded-file';
+
+        // Trigger the download
         link.click();
+
+        // Revoke reference to the file
         window.URL.revokeObjectURL(url);
+
+        // Reset the selectedFile state
         setSelectedFile({ id: '', name: '' });
       } else {
         alert('Failed to download file');
       }
     } catch (error) {
+      // Handle and display any errors
       alert('Error downloading file:', error);
     }
   };
 
+  // Send a file via POST request
   const uploadFile = async (file) => {
+    // Create a FormData object to store the file
     const formData = new FormData();
     formData.append('file', file);
 
     try {
+      // Send a POST request to the API with the file data
       const res = await fetch('/api/drive', {
         method: 'POST',
         body: formData,
       });
 
+      // Check if the upload was successful
       if (res.status === 200) {
         alert('File uploaded successfully');
+
+        // Reset the selectedFileToUpload state
         setSelectedFileToUpload(null);
+
+        //Refresh files
+        fetchFiles();
       } else {
         alert('Failed to upload file');
       }
     } catch (error) {
+      // Handle and display any errors
       alert('Error uploading file:', error);
     }
   };
 
   const handleFileChange = (event) => {
+    // Get the first file from the file input
     const file = event.target.files[0];
+
+    // Update selectedFileToUpload state
     setSelectedFileToUpload(file);
   };
 
   const handleUploadClick = () => {
+    // Check if a file has been selected
     if (selectedFileToUpload) {
+      // Call the upload function
       uploadFile(selectedFileToUpload);
     } else {
       alert('Please select a file first');
