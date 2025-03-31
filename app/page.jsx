@@ -108,6 +108,11 @@ const Home = () => {
     }
   };
 
+  const localDate = (modifiedTime) => {
+    const date = new Date(modifiedTime);
+    return date.toLocaleString();
+  };
+
   useEffect(() => {
     fetchFiles();
   }, [session]);
@@ -163,7 +168,8 @@ const Home = () => {
                       setSelectedFile({ id: file.id, name: file.name })
                     }
                   >
-                    {file.name} ({file.mimeType})
+                    {file.name} - ({file.mimeType}) -{' '}
+                    {localDate(file.modifiedTime)}
                   </li>
                 ))}
               </ul>
